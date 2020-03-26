@@ -257,13 +257,22 @@ generate_rankings <- function(distancias){
   
   ##FAZER
   ## ordenar distancias
-  
+  ## ordenar por menor distancia e retornar as posicoes das imagens com menor distancia (mais proximas)
+  ranking <- order(distancias)
+  print(ranking)
   return(ranking)
 }
 
 ##FAZER para cada consulta
 ## calcular ranking para o metodo de agregacao BORDA 
-
+bordacount <- function (...) {
+  # obtem os rankings
+  rankings <- mapply (rank , list (...) ,
+                      SIMPLIFY = FALSE )
+  # calcula a ordem baseada na soma
+  # das posições dos rankings
+  return (do.call(combsum , rankings ))
+}
 
 #################################################
 #################################################
@@ -296,6 +305,8 @@ generate_rankings <- function(distancias){
 ## FAZER -- pode ser utilizado mesmo metodo do trabalho anterior
 ## obter vetores finais de caracteristicas pela concatenação de cada tipo de caracteristica (forma, cor, textura):
 ## - dos 3
+f_color_texture_shape <- cbind(feature_color, feature_texture, feature_shape);
+
 ## utilizar a funcao generate_distance da questao 2 seguida da funcao generate_ranking da questao 3 para cada novo vetor de caracteristicas (com as mesmas consultas)
 
 #################################################
