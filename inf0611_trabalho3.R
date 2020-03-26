@@ -46,7 +46,7 @@ ground_truth <- get_ground_truth(nome_classes, classe_relevante)
 #------------------------------------------------#
 # define consulta classe relevante               #
 #------------------------------------------------#
-consulta <- #utilizar as mesmas do Trabalho 2
+consulta <- c(11,19) #utilizar as mesmas do Trabalho 2
   
 #------------------------------------------------#
 # define tamanho do topK analisado               #
@@ -169,6 +169,8 @@ feature_shape <- features_shape(imagens);
 
 
 #escolha duas consultas da classe barcelona (posicoes de 11 a 20 do vetor ground_truth)
+
+
 #construa os rankings para cada metodo de agregacao e para cada consulta (3 rankings para cada consulta)
 
 generate_distances <- function(features, query){
@@ -182,12 +184,37 @@ generate_distances <- function(features, query){
   return(distancias)
 }
 
+#################################################
+#         Calcular Distancias                   #
+#################################################
+
+distance_color_c1 <- generate_distances(feature_color, consulta[1]);
+distance_texture_c1 <- generate_distances(feature_texture, consulta[1]);
+distance_shape_c1 <- generate_distances(feature_shape, consulta[1]);
+
+distance_color_c2 <- generate_distances(feature_color, consulta[2]);
+distance_texture_c2 <- generate_distances(feature_texture, consulta[2]);
+distance_shape_c2 <- generate_distances(feature_shape, consulta[2]);
+
+
+#################################################
+#################################################
+
 ##FAZER para cada consulta 
 ## calcular rankings para a agregacao por COMBMIN 
+combmin <- function (...) {
+  order ( mapply (min , ...))
+}
 
 ## calcular rankings para a agregacao por COMBMAX 
+combmax <- function (...) {
+  order ( mapply (max , ...))
+}
 
 ## calcular rankings para a agregacao por COMBSUM 
+combsum <- function (...) {
+  order ( mapply (sum , ...))
+}
 
 #################################################
 #################################################
