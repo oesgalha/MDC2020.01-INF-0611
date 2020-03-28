@@ -202,19 +202,20 @@ distance_shape_c2 <- generate_distances(feature_shape, consulta[2]);
 
 ##FAZER para cada consulta 
 ## calcular rankings para a agregacao por COMBMIN 
-combmin <- function (...) {
-  order ( mapply (min , ...))
-}
-
+## Consulta #1
+ranking_combmin1 <- combmin(distance_color_c1, distance_texture_c1, distance_shape_c1) 
+## Consulta #2
+ranking_combmin2 <-combmin(distance_color_c2, distance_texture_c2, distance_shape_c2) 
 ## calcular rankings para a agregacao por COMBMAX 
-combmax <- function (...) {
-  order ( mapply (max , ...))
-}
-
+## Consulta #1
+ranking_combmax1 <- combmax(distance_color_c1, distance_texture_c1, distance_shape_c1)  
+## Consulta #2  
+ranking_combmax2 <-combmax(distance_color_c2, distance_texture_c2, distance_shape_c2)  
 ## calcular rankings para a agregacao por COMBSUM 
-combsum <- function (...) {
-  order ( mapply (sum , ...))
-}
+## Consulta #1
+ranking_combsum1 <- combsum(distance_color_c1, distance_texture_c1, distance_shape_c1)  
+## Consulta #2  
+ranking_combsum2 <- combsum(distance_color_c2, distance_texture_c2, distance_shape_c2) 
 
 #################################################
 #################################################
@@ -230,6 +231,60 @@ combsum <- function (...) {
 ## serao entao um total de 4 graficos (dois para cada consulta)
 
 #################################################
+## Precisão Consulta #1
+## Precisao no topk para combmin
+   prec_combMin1 <- mapply(precision, 1:k, 
+                           MoreArgs = list(ground_truth = ground_truth, 
+                                           prediction = ranking_combmin1))
+## Precisao no topk para combmax
+   prec_combMax1 <- mapply(precision, 1:k,
+                           MoreArgs = list(ground_truth = ground_truth, 
+                                           prediction = ranking_combmax1))
+## Precisao no topk para combsum
+   prec_combSum1 <- mapply(precision, 1:k, 
+                           MoreArgs = list(ground_truth = ground_truth, 
+                                           prediction = ranking_combsum1))
+## Revocação Consulta #1   
+## Revocação no topk para combmin
+   recall_combMin1 <- mapply(recall, 1:k, 
+                             MoreArgs = list(ground_truth = ground_truth, 
+                                             prediction = ranking_combmin1))
+## Revocação no topk para combmax
+   recall_combMax1 <- mapply(recall, 1:k,
+                             MoreArgs = list(ground_truth = ground_truth, 
+                                             prediction = ranking_combmax1))
+## Revocação no topk para combsum
+   recall_combsum1 <- mapply(recall, 1:k, 
+                             MoreArgs = list(ground_truth = ground_truth, 
+                                             prediction = ranking_combsum1))  
+#################################################
+## Precisão Consulta #2
+## Precisao no topk para combmin
+   prec_combMin2 <- mapply(precision, 1:k, 
+                           MoreArgs = list(ground_truth = ground_truth, 
+                                           prediction = ranking_combmin2))
+## Precisao no topk para combmax
+   prec_combMax2 <- mapply(precision, 1:k,
+                           MoreArgs = list(ground_truth = ground_truth, 
+                                           prediction = ranking_combmax2))
+## Precisao no topk para combsum
+   prec_combSum2 <- mapply(precision, 1:k, 
+                           MoreArgs = list(ground_truth = ground_truth, 
+                                           prediction = ranking_combsum2))
+## Revocação Consulta #2   
+## Revocação no topk para combmin
+   recall_combMin2 <- mapply(recall, 1:k, 
+                             MoreArgs = list(ground_truth = ground_truth, 
+                                             prediction = ranking_combmin2))
+## Revocação no topk para combmax
+   recall_combMax2 <- mapply(recall, 1:k,
+                             MoreArgs = list(ground_truth = ground_truth, 
+                                             prediction = ranking_combmax2))
+## Revocação no topk para combsum
+   recall_combsum2 <- mapply(recall, 1:k, 
+                             MoreArgs = list(ground_truth = ground_truth, 
+                                             prediction = ranking_combsum2)) 
+
 #################################################
 
 ##NAO SE ESQUECA DO RELATORIO
