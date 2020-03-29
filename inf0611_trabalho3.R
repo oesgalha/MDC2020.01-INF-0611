@@ -157,6 +157,11 @@ feature_color <- features_color(imagens);
 feature_texture <- features_texture(imagens);
 feature_shape <- features_shape(imagens);
 
+# Normaliza as features
+feature_color <- (feature_color - min(feature_color)) /(max(feature_color) - min(feature_color))
+feature_shape <- (feature_shape - min(feature_shape)) /(max(feature_shape) - min(feature_shape))
+feature_texture <- (feature_texture - min(feature_texture)) /(max(feature_texture) - min(feature_texture))
+
 #################################################
 #################################################
 
@@ -361,17 +366,17 @@ plot_consulta_borda_metric <- function(metric, consulta_index, metric_name, titl
   #           title -> Título do gráfico
   pr = data.frame()
 
-  metric_csum <- mapply(metric, 1:top,
+  metric_cmax <- mapply(metric, 1:top,
                         MoreArgs = list(ground_truth = ground_truth,
-                                        prediction = ranking_combsum[,consulta_index]))
+                                        prediction = ranking_combmax[,consulta_index]))
   metric_borda <- mapply(metric, 1:top,
                         MoreArgs = list(ground_truth = ground_truth,
                                         prediction = ranking_borda[,consulta_index]))
 
   ggplot(pr,aes(x = 1:top)) +
-    geom_point(aes(y = metric_csum),  color = 'red') +
-    geom_line(aes(y = metric_csum), color = 'red') +
-    geom_text(aes(0, 1,label = "CombSum"), vjust= -0.3, color = 'red') +
+    geom_point(aes(y = metric_cmax),  color = 'red') +
+    geom_line(aes(y = metric_cmax), color = 'red') +
+    geom_text(aes(0, 1,label = "CombMax"), vjust= -0.3, color = 'red') +
     geom_point(aes(y = metric_borda),  color = 'blue') +
     geom_line(aes(y = metric_borda),  color = 'blue') +
     geom_text(aes(0, 0.9,label = "Borda"), vjust= -0.3, color = 'blue') +
@@ -450,18 +455,18 @@ plot_consulta_combinada_metric <- function(metric, consulta_index, metric_name, 
   #           title -> Título do gráfico
   pr = data.frame()
 
-  metric_csum <- mapply(metric, 1:top,
+  metric_cmax <- mapply(metric, 1:top,
                         MoreArgs = list(ground_truth = ground_truth,
-                                        prediction = ranking_combsum[,consulta_index]))
+                                        prediction = ranking_combmax[,consulta_index]))
 
   metric_all <- mapply(metric, 1:top,
                        MoreArgs = list(ground_truth = ground_truth,
                                        prediction = ranking_all[,consulta_index]))
 
   ggplot(pr,aes(x = 1:top)) +
-    geom_point(aes(y = metric_csum),  color = 'red') +
-    geom_line(aes(y = metric_csum), color = 'red') +
-    geom_text(aes(0, 0.1,label = "CombSum"), vjust= -0.3, color = 'red') +
+    geom_point(aes(y = metric_cmax),  color = 'red') +
+    geom_line(aes(y = metric_cmax), color = 'red') +
+    geom_text(aes(0, 0.1,label = "CombMax"), vjust= -0.3, color = 'red') +
     geom_point(aes(y = metric_all),  color = 'blue') +
     geom_line(aes(y = metric_all),  color = 'blue') +
     geom_text(aes(1, 0,label = "Descritores Concatenados"), vjust= -0.3, color = 'blue') +
