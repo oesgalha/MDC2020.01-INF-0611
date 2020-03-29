@@ -420,9 +420,14 @@ for (i in 1:length(consulta)) {
 ## FAZER -- pode ser utilizado mesmo metodo do trabalho anterior
 ## obter vetores finais de caracteristicas pela concatenação de cada tipo de caracteristica (forma, cor, textura):
 ## - dos 3
-f_color_texture_shape <- cbind(feature_color, feature_texture, feature_shape);
+feature_all <- cbind(feature_color, feature_texture, feature_shape)
 
 ## utilizar a funcao generate_distance da questao 2 seguida da funcao generate_ranking da questao 3 para cada novo vetor de caracteristicas (com as mesmas consultas)
+ranking_all <- NULL
+for (c in consulta) {
+  distance <- generate_distances(feature_all, c)
+  ranking_all <- cbind(ranking_all, generate_rankings(distance))
+}
 
 #################################################
 #################################################
@@ -436,6 +441,55 @@ f_color_texture_shape <- cbind(feature_color, feature_texture, feature_shape);
 ## gere um grafico de revocacao X topK para cada consulta (contendo as curvas dos rankings da agregacao escolhida e da concatenacao de caracteristicas)
 
 ## serao entao um total de 4 graficos (dois para cada consulta)
+
+# Função auxiliar para gerar o gráfico
+plot_consulta_combinada_metric <- function(metric, consulta_index, metric_name, title) {
+  # entrada:  metric -> função da métrica (ex: precision, recall)
+  #           consulta_index -> índice do vetor de consultas
+  #           metric_name -> Nome da métrica usada para etiquetar o eixo Y
+  #           title -> Título do gráfico
+  pr = data.frame()
+
+  metric_csum <- mapply(metric, 1:top,
+                        MoreArgs = list(ground_truth = ground_truth,
+                                        prediction = ranking_combsum[,consulta_index]))
+
+  metric_all <- mapply(metric, 1:top,
+                       MoreArgs = list(ground_truth = ground_truth,
+                                       prediction = ranking_all[,consulta_index]))
+
+  ggplot(pr,aes(x = 1:top)) +
+    geom_point(aes(y = metric_csum),  color = 'red') +
+    geom_line(aes(y = metric_csum), color = 'red') +
+    geom_text(aes(0, 0.1,label = "CombSum"), vjust= -0.3, color = 'red') +
+    geom_point(aes(y = metric_all),  color = 'blue') +
+    geom_line(aes(y = metric_all),  color = 'blue') +
+    geom_text(aes(1, 0,label = "Descritores Concatenados"), vjust= -0.3, color = 'blue') +
+    theme_light() +
+    labs(colour = element_blank(),
+         title = title) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(name = metric_name, limits = c(0, 1),
+                       breaks = 0:10*0.1,
+                       minor_breaks = NULL) +
+    scale_x_continuous(name = "TopK", limits = c(0, top),
+                       breaks = 0:top,
+                       minor_breaks = NULL)
+}
+
+metrics = c(precision, recall)
+metric_names = c("Precisão", "Revocação")
+
+# Gera os gráficos de precisão e revocação para cada consulta
+for (i in 1:length(consulta)) {
+  for (m in 1:2) {
+    title <- paste(metric_names[m], " x TopK barcelona_", sprintf("%02d", consulta[i] - 10), ".jpg", sep = "")
+    plot_consulta_combinada_metric(metrics[[m]], i, metric_names[m], title)
+    metric_prefix <- ifelse(metric_names[m] == "Precisão", "prec", "reca")
+    file_name <- paste("questao4_", metric_prefix, "_barcelona", sprintf("%02d", consulta[i] - 10), ".png", sep = "")
+    ggsave(file_name, width =12, height =6)
+  }
+}
 
 #################################################
 #################################################
