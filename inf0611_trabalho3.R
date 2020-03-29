@@ -312,8 +312,17 @@ generate_rankings <- function(distancias){
   ## ordenar distancias
   ## ordenar por menor distancia e retornar as posicoes das imagens com menor distancia (mais proximas)
   ranking <- order(distancias)
-  print(ranking)
   return(ranking)
+}
+
+rankings_color <- NULL
+rankings_texture <- NULL
+rankings_shape <- NULL
+
+for (i in 1:length(consulta)) {
+  rankings_color <- cbind(rankings_color, generate_rankings(distance_color[,i]))
+  rankings_texture <- cbind(rankings_texture, generate_rankings(distance_texture[,i]))
+  rankings_shape <- cbind(rankings_shape, generate_rankings(distance_shape[,i]))
 }
 
 ##FAZER para cada consulta
@@ -325,6 +334,11 @@ bordacount <- function (...) {
   # calcula a ordem baseada na soma
   # das posições dos rankings
   return (do.call(combsum , rankings ))
+}
+
+ranking_borda <- NULL
+for (i in 1:length(consulta)) {
+  ranking_borda <- cbind(ranking_borda, bordacount(rankings_color[,i], rankings_shape[,i], rankings_texture[,i]))
 }
 
 #################################################
@@ -339,6 +353,54 @@ bordacount <- function (...) {
 ## gere um grafico de revocacao X topK para cada consulta (contendo as curvas dos rankings gerados pelo BORDA e pelo COMB escolhido)
 
 ## serao entao um total de 4 graficos (dois para cada consulta)
+# Função auxiliar para gerar o gráfico
+plot_consulta_borda_metric <- function(metric, consulta_index, metric_name, title) {
+  # entrada:  metric -> função da métrica (ex: precision, recall)
+  #           consulta_index -> índice do vetor de consultas
+  #           metric_name -> Nome da métrica usada para etiquetar o eixo Y
+  #           title -> Título do gráfico
+  pr = data.frame()
+
+  metric_csum <- mapply(metric, 1:top,
+                        MoreArgs = list(ground_truth = ground_truth,
+                                        prediction = ranking_combsum[,consulta_index]))
+  metric_borda <- mapply(metric, 1:top,
+                        MoreArgs = list(ground_truth = ground_truth,
+                                        prediction = ranking_borda[,consulta_index]))
+
+  ggplot(pr,aes(x = 1:top)) +
+    geom_point(aes(y = metric_csum),  color = 'red') +
+    geom_line(aes(y = metric_csum), color = 'red') +
+    geom_text(aes(0, 1,label = "CombSum"), vjust= -0.3, color = 'red') +
+    geom_point(aes(y = metric_borda),  color = 'blue') +
+    geom_line(aes(y = metric_borda),  color = 'blue') +
+    geom_text(aes(0, 0.9,label = "Borda"), vjust= -0.3, color = 'blue') +
+    theme_light() +
+    labs(colour = element_blank(),
+         title = title) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(name = metric_name, limits = c(0, 1),
+                       breaks = 0:10*0.1,
+                       minor_breaks = NULL) +
+    scale_x_continuous(name = "TopK", limits = c(0, top),
+                       breaks = 0:top,
+                       minor_breaks = NULL)
+}
+
+metrics = c(precision, recall)
+metric_names = c("Precisão", "Revocação")
+
+# Gera os gráficos de precisão e revocação para cada consulta
+for (i in 1:length(consulta)) {
+  for (m in 1:2) {
+    title <- paste(metric_names[m], " x TopK barcelona_", sprintf("%02d", consulta[i] - 10), ".jpg", sep = "")
+    plot_consulta_borda_metric(metrics[[m]], i, metric_names[m], title)
+    metric_prefix <- ifelse(metric_names[m] == "Precisão", "prec", "reca")
+    file_name <- paste("questao3_", metric_prefix, "_barcelona", sprintf("%02d", consulta[i] - 10), ".png", sep = "")
+    ggsave(file_name, width =12, height =6)
+  }
+}
+
 
 #################################################
 #################################################
