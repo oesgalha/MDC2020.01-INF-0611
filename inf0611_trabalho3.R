@@ -180,7 +180,6 @@ generate_distances <- function(features, query){
   ## calcular distancia euclidiana de todas as imagens (representada pelas caracteristicas) para a consulta
   distancia <- full(ecodist::distance(features, "euclidean"))
   distancias <- distancia[,query]
-  print(distancias)
   return(distancias)
 }
 
@@ -188,34 +187,33 @@ generate_distances <- function(features, query){
 #         Calcular Distancias                   #
 #################################################
 
-distance_color_c1 <- generate_distances(feature_color, consulta[1]);
-distance_texture_c1 <- generate_distances(feature_texture, consulta[1]);
-distance_shape_c1 <- generate_distances(feature_shape, consulta[1]);
+distance_color <- NULL
+distance_texture <- NULL
+distance_shape <- NULL
 
-distance_color_c2 <- generate_distances(feature_color, consulta[2]);
-distance_texture_c2 <- generate_distances(feature_texture, consulta[2]);
-distance_shape_c2 <- generate_distances(feature_shape, consulta[2]);
-
+for (c in consulta) {
+  distance_color <- cbind(distance_color, generate_distances(feature_color, c))
+  distance_texture <- cbind(distance_texture, generate_distances(feature_texture, c))
+  distance_shape <- cbind(distance_shape, generate_distances(feature_shape, c))
+}
 
 #################################################
 #################################################
 
-##FAZER para cada consulta 
-## calcular rankings para a agregacao por COMBMIN 
-## Consulta #1
-ranking_combmin1 <- combmin(distance_color_c1, distance_texture_c1, distance_shape_c1) 
-## Consulta #2
-ranking_combmin2 <-combmin(distance_color_c2, distance_texture_c2, distance_shape_c2) 
-## calcular rankings para a agregacao por COMBMAX 
-## Consulta #1
-ranking_combmax1 <- combmax(distance_color_c1, distance_texture_c1, distance_shape_c1)  
-## Consulta #2  
-ranking_combmax2 <-combmax(distance_color_c2, distance_texture_c2, distance_shape_c2)  
-## calcular rankings para a agregacao por COMBSUM 
-## Consulta #1
-ranking_combsum1 <- combsum(distance_color_c1, distance_texture_c1, distance_shape_c1)  
-## Consulta #2  
-ranking_combsum2 <- combsum(distance_color_c2, distance_texture_c2, distance_shape_c2) 
+##FAZER para cada consulta
+## calcular rankings para a agregacao por COMBMIN
+## calcular rankings para a agregacao por COMBMAX
+## calcular rankings para a agregacao por COMBSUM
+
+ranking_combmin <- NULL
+ranking_combmax <- NULL
+ranking_combsum <- NULL
+
+for (i in 1:length(consulta)) {
+  ranking_combmin <- cbind(ranking_combmin, combmin(distance_color[,i], distance_texture[,i], distance_shape[,i]))
+  ranking_combmax <- cbind(ranking_combmax, combmax(distance_color[,i], distance_texture[,i], distance_shape[,i]))
+  ranking_combsum <- cbind(ranking_combsum, combsum(distance_color[,i], distance_texture[,i], distance_shape[,i]))
+}
 
 #################################################
 #################################################
@@ -230,61 +228,61 @@ ranking_combsum2 <- combsum(distance_color_c2, distance_texture_c2, distance_sha
 
 ## serao entao um total de 4 graficos (dois para cada consulta)
 
-#################################################
-## Precisão Consulta #1
-## Precisao no topk para combmin
-   prec_combMin1 <- mapply(precision, 1:k, 
-                           MoreArgs = list(ground_truth = ground_truth, 
-                                           prediction = ranking_combmin1))
-## Precisao no topk para combmax
-   prec_combMax1 <- mapply(precision, 1:k,
-                           MoreArgs = list(ground_truth = ground_truth, 
-                                           prediction = ranking_combmax1))
-## Precisao no topk para combsum
-   prec_combSum1 <- mapply(precision, 1:k, 
-                           MoreArgs = list(ground_truth = ground_truth, 
-                                           prediction = ranking_combsum1))
-## Revocação Consulta #1   
-## Revocação no topk para combmin
-   recall_combMin1 <- mapply(recall, 1:k, 
-                             MoreArgs = list(ground_truth = ground_truth, 
-                                             prediction = ranking_combmin1))
-## Revocação no topk para combmax
-   recall_combMax1 <- mapply(recall, 1:k,
-                             MoreArgs = list(ground_truth = ground_truth, 
-                                             prediction = ranking_combmax1))
-## Revocação no topk para combsum
-   recall_combsum1 <- mapply(recall, 1:k, 
-                             MoreArgs = list(ground_truth = ground_truth, 
-                                             prediction = ranking_combsum1))  
-#################################################
-## Precisão Consulta #2
-## Precisao no topk para combmin
-   prec_combMin2 <- mapply(precision, 1:k, 
-                           MoreArgs = list(ground_truth = ground_truth, 
-                                           prediction = ranking_combmin2))
-## Precisao no topk para combmax
-   prec_combMax2 <- mapply(precision, 1:k,
-                           MoreArgs = list(ground_truth = ground_truth, 
-                                           prediction = ranking_combmax2))
-## Precisao no topk para combsum
-   prec_combSum2 <- mapply(precision, 1:k, 
-                           MoreArgs = list(ground_truth = ground_truth, 
-                                           prediction = ranking_combsum2))
-## Revocação Consulta #2   
-## Revocação no topk para combmin
-   recall_combMin2 <- mapply(recall, 1:k, 
-                             MoreArgs = list(ground_truth = ground_truth, 
-                                             prediction = ranking_combmin2))
-## Revocação no topk para combmax
-   recall_combMax2 <- mapply(recall, 1:k,
-                             MoreArgs = list(ground_truth = ground_truth, 
-                                             prediction = ranking_combmax2))
-## Revocação no topk para combsum
-   recall_combsum2 <- mapply(recall, 1:k, 
-                             MoreArgs = list(ground_truth = ground_truth, 
-                                             prediction = ranking_combsum2)) 
+# Função auxiliar para gerar o gráfico
+plot_consulta_metric <- function(metric, consulta_index, metric_name, title) {
+  # entrada:  metric -> função da métrica (ex: precision, recall)
+  #           consulta_index -> índice do vetor de consultas
+  #           metric_name -> Nome da métrica usada para etiquetar o eixo Y
+  #           title -> Título do gráfico
+  pr = data.frame()
 
+  metric_cmin <- mapply(metric, 1:top,
+                     MoreArgs = list(ground_truth = ground_truth,
+                                     prediction = ranking_combmin[,consulta_index]))
+  metric_cmax <- mapply(metric, 1:top,
+                     MoreArgs = list(ground_truth = ground_truth,
+                                     prediction = ranking_combmax[,consulta_index]))
+  metric_csum <- mapply(metric, 1:top,
+                     MoreArgs = list(ground_truth = ground_truth,
+                                     prediction = ranking_combsum[,consulta_index]))
+
+  ggplot(pr,aes(x = 1:top)) +
+    geom_point(aes(y = metric_cmin),  color = 'red') +
+    geom_line(aes(y = metric_cmin), color = 'red') +
+    geom_text(aes(0, 1,label = "CombMin"), vjust= -0.3, color = 'red') +
+    geom_point(aes(y = metric_cmax),  color = 'blue') +
+    geom_line(aes(y = metric_cmax),  color = 'blue') +
+    geom_text(aes(0, 0.9,label = "CombMax"), vjust= -0.3, color = 'blue') +
+    geom_point(aes(y = metric_csum),color = 'green') +
+    geom_line(aes(y = metric_csum),color = 'green') +
+    geom_text(aes(0, 0.8, label = "CombSum"), vjust= -0.3,color = 'green') +
+    theme_light() +
+    labs(colour = element_blank(),
+         title = title) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(name = metric_name, limits = c(0, 1),
+                       breaks = 0:10*0.1,
+                       minor_breaks = NULL) +
+    scale_x_continuous(name = "TopK", limits = c(0, top),
+                       breaks = 0:top,
+                       minor_breaks = NULL)
+}
+
+metrics = c(precision, recall)
+metric_names = c("Precisão", "Revocação")
+
+# Gera os gráficos de precisão e revocação para cada consulta
+for (i in 1:length(consulta)) {
+  for (m in 1:2) {
+    title <- paste(metric_names[m], " x TopK barcelona_", sprintf("%02d", consulta[i] - 10), ".jpg", sep = "")
+    plot_consulta_metric(metrics[[m]], i, metric_names[m], title)
+    metric_prefix <- ifelse(metric_names[m] == "Precisão", "prec", "reca")
+    file_name <- paste("questao2_", metric_prefix, "_barcelona", sprintf("%02d", consulta[i] - 10), ".png", sep = "")
+    ggsave(file_name, width =12, height =6)
+  }
+}
+
+#################################################
 #################################################
 
 ##NAO SE ESQUECA DO RELATORIO
