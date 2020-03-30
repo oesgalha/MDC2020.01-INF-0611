@@ -4,12 +4,13 @@
 # Trabalho Avaliativo 3                          #
 #------------------------------------------------#
 # Nome COMPLETO Aluna (o) 1:                     #
-#                                                #
+# Karla Fátima Calvoso Simões                    #
 # Nome COMPLETO Aluna (o) 2:                     #
-#                                                #
+# Oscar dos Santos Esgalha Neto                  #
 # Nome COMPLETO Aluna (o) 3:                     #
-#                                                #
-# Nome COMPLETO Aluna (o) 4:                     #                                              #
+# Renan Afonso Rossi                             #
+# Nome COMPLETO Aluna (o) 4:                     #
+# Weld Lucas Cunha                               #
 #------------------------------------------------#
 
 #------------------------------------------------#
