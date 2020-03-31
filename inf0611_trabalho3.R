@@ -16,7 +16,11 @@
 #------------------------------------------------#
 # Configuracao dos arquivos auxiliares           #
 #------------------------------------------------#
-# setwd("") # configure o caminho antes de descomentar essa linha
+# Limpando o ambiente e configurando o caminho do diretporio de trabalho:
+setwd(getwd()) # configure o caminho antes de descomentar essa linha
+rm(list=ls())
+
+library(ggplot2)
 source("./ranking_metrics.R")
 source("./trabalho3_base.R")
 
